@@ -1,0 +1,7 @@
+config mihomo 'config'
+	option enabled '0'
+	option sub_url ''
+	option mixin_enabled '1'
+	option api_port '9090'
+	option api_secret ''
+	option updated_at 'none'

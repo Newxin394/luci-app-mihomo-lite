@@ -1,0 +1,680 @@
+# Mixin: 基础参数/DNS/groups/providers/rules/listeners 恒定覆写; 节点由订阅提供
+# 2026-09-20: 基础参数与 DNS 已逐字对齐原 Nikki 生产配置 (/etc/nikki/run/config.yaml)
+---
+tcp-concurrent: true
+unified-delay: true
+mode: rule
+log-level: warning
+ipv6: true
+find-process-mode: off
+external-ui: ui
+external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# --- 显式代理入站（Nikki: http 8090 / socks 1080 / mixed 7893 + 鉴权）---
+# --- mihomo-lite managed start ---
+allow-lan: true
+bind-address: "*"
+port: 8090
+socks-port: 1080
+mixed-port: 7893
+authentication:
+  - "Clash:password"
+# --- mihomo-lite managed end ---
+
+# --- DNS：与原 Nikki 生产配置逐字一致（DoH 优先 + 明文引导）---
+dns:
+  enable: true
+  listen: "[::]:1053"
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+    - 121.4.4.77
+    - 120.53.53.141
+    - 2402:4e00:0::57da:bfa2
+    - 2402:4e00:1::57da:bfa2
+  proxy-server-nameserver:
+    - 121.4.4.77
+    - 120.53.53.141
+    - 2402:4e00:0::57da:bfa2
+    - 2402:4e00:1::57da:bfa2
+  direct-nameserver:
+    - https://doh-57dabfa2.doh.pub/dns-query
+    - 121.4.4.77
+    - 120.53.53.141
+    - 2402:4e00:0::57da:bfa2
+    - 2402:4e00:1::57da:bfa2
+  nameserver:
+    - https://doh-57dabfa2.doh.pub/dns-query
+    - 121.4.4.77
+    - 120.53.53.141
+    - 2402:4e00:0::57da:bfa2
+    - 2402:4e00:1::57da:bfa2
+  direct-nameserver-follow-policy: false
+  nameserver-policy:
+    "geosite:private,cn":
+      - https://doh-57dabfa2.doh.pub/dns-query
+      - 121.4.4.77
+      - 120.53.53.141
+      - 2402:4e00:0::57da:bfa2
+      - 2402:4e00:1::57da:bfa2
+
+proxy-groups:
+  - name: 全球手动
+    type: select
+    include-all: true
+  - name: 智能优选
+    type: smart
+    url: https://www.gstatic.com/generate_204
+    interval: 1200
+    max-failed-times: 3
+    expected-status: 200/204
+    include-all: true
+    lazy: true
+    policy-priority: IPLC:0.6
+  - name: 香港智能
+    type: smart
+    filter: "(?i)香港|HK|Hong Kong|HongKong|Hong|\U0001F1ED\U0001F1F0"
+    include-all: true
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    max-failed-times: 3
+    expected-status: 200/204
+    lazy: true
+    policy-priority: IPLC:0.6
+  - name: 台湾智能
+    type: smart
+    filter: "(?i)台湾|台北|台中|台南|TW|Taiwan|Taipei|\U0001F1F9\U0001F1FC"
+    include-all: true
+    url: https://www.gstatic.com/generate_204
+    interval: 1200
+    max-failed-times: 3
+    expected-status: 200/204
+    lazy: true
+    policy-priority: IPLC:0.6
+  - name: 日本智能
+    type: smart
+    filter: "(?i)日本|东京|大阪|京都|JP|Japan|Tokyo|Osaka|\U0001F1EF\U0001F1F5"
+    include-all: true
+    url: https://www.gstatic.com/generate_204
+    interval: 1200
+    max-failed-times: 3
+    expected-status: 200/204
+    lazy: true
+    policy-priority: IPLC:0.6
+  - name: 狮城智能
+    type: smart
+    filter: "(?i)新加坡|狮城|SG|Singapore|\U0001F1F8\U0001F1EC|马来西亚|马来|大马|MY|Malaysia|\U0001F1F2\U0001F1FE|新西兰|纽西兰|NZ|New Zealand|\U0001F1F3\U0001F1FF"
+    include-all: true
+    url: https://www.gstatic.com/generate_204
+    interval: 1200
+    max-failed-times: 3
+    expected-status: 200/204
+    lazy: true
+    policy-priority: IPLC:0.6
+  - name: 韩国智能
+    type: smart
+    filter: "(?i)韩国|韓國|首尔|首爾|KR|Korea|Seoul|\U0001F1F0\U0001F1F7"
+    include-all: true
+    url: https://www.gstatic.com/generate_204
+    interval: 1200
+    max-failed-times: 3
+    expected-status: 200/204
+    lazy: true
+    policy-priority: IPLC:0.6
+  - name: 美国智能
+    type: smart
+    filter: "(?i)美国|美國|US|USA|United States|America|\U0001F1FA\U0001F1F8"
+    include-all: true
+    url: https://www.gstatic.com/generate_204
+    interval: 1200
+    max-failed-times: 3
+    expected-status: 200/204
+    lazy: true
+    policy-priority: IPLC:0.6
+  - name: 欧盟智能
+    type: smart
+    filter: "^(?i)(?!.*(香港|深港|沪港|广港|陆港|港|(?<![a-zA-Z])(hk|hkg)(?![a-zA-Z])|hongkong|hong[\\s_-]?kong|\U0001F1ED\U0001F1F0|日本|东京|大阪|京都|神奈川|琦玉|(?<![a-zA-Z])(jp|jpn|nrt|hnd|kix|cts|fuk)(?![a-zA-Z])|japan|tokyo|osaka|\U0001F1EF\U0001F1F5|排除))(?=.*(新加坡|狮城|坡县|(?<![a-zA-Z])(sg|sin|xsp)(?![a-zA-Z])|singapore|\U0001F1F8\U0001F1EC|欧洲|欧盟|(?<![a-zA-Z])(eu|eur)(?![a-zA-Z])|europe|\U0001F1EA\U0001F1FA|德国|(?<![a-zA-Z])(de|ger|fra|ber)(?![a-zA-Z])|germany|deutschland|frankfurt|\U0001F1E9\U0001F1EA|英国|(?<![a-zA-Z])(uk|gb|gbr|lon)(?![a-zA-Z])|britain|united[\\s_-]?kingdom|england|london|\U0001F1EC\U0001F1E7|法国|(?<![a-zA-Z])(fr|fra|par|cdg)(?![a-zA-Z])|france|paris|\U0001F1EB\U0001F1F7|荷兰|(?<![a-zA-Z])(nl|nld|ams)(?![a-zA-Z])|netherlands|holland|amsterdam|\U0001F1F3\U0001F1F1|意大利|(?<![a-zA-Z])(it|ita|mil|rom)(?![a-zA-Z])|italy|italia|milan|rome|\U0001F1EE\U0001F1F9|西班牙|(?<![a-zA-Z])(es|esp|mad|bcn)(?![a-zA-Z])|spain|madrid|barcelona|\U0001F1EA\U0001F1F8|瑞士|(?<![a-zA-Z])(ch|che|zrh|gva)(?![a-zA-Z])|switzerland|swiss|zurich|geneva|\U0001F1E8\U0001F1ED|瑞典|(?<![a-zA-Z])(se|swe|arn)(?![a-zA-Z])|sweden|stockholm|\U0001F1F8\U0001F1EA|爱尔兰|(?<![a-zA-Z])(ie|irl|dub)(?![a-zA-Z])|ireland|dublin|\U0001F1EE\U0001F1EA|波兰|(?<![a-zA-Z])(pl|pol|waw)(?![a-zA-Z])|poland|warsaw|\U0001F1F5\U0001F1F1|芬兰|(?<![a-zA-Z])(fi|fin|hel)(?![a-zA-Z])|finland|helsinki|\U0001F1EB\U0001F1EE|挪威|(?<![a-zA-Z])(no|nor|osl)(?![a-zA-Z])|norway|oslo|\U0001F1F3\U0001F1F4|丹麦|(?<![a-zA-Z])(dk|dnk|cph)(?![a-zA-Z])|denmark|copenhagen|\U0001F1E9\U0001F1F0|奥地利|(?<![a-zA-Z])(at|aut|vie)(?![a-zA-Z])|austria|vienna|\U0001F1E6\U0001F1F9|比利时|(?<![a-zA-Z])(be|bel|bru)(?![a-zA-Z])|belgium|brussels|\U0001F1E7\U0001F1EA|葡萄牙|(?<![a-zA-Z])(pt|prt|lis)(?![a-zA-Z])|portugal|lisbon|\U0001F1F5\U0001F1F9|捷克|(?<![a-zA-Z])(cz|cze|prg)(?![a-zA-Z])|czech|prague|\U0001F1E8\U0001F1FF|希腊|(?<![a-zA-Z])(gr|grc|ath)(?![a-zA-Z])|greece|athens|\U0001F1EC\U0001F1F7|匈牙利|(?<![a-zA-Z])(hu|hun|bud)(?![a-zA-Z])|hungary|budapest|\U0001F1ED\U0001F1FA|土耳其|(?<![a-zA-Z])(tr|tur|ist)(?![a-zA-Z])|turkey|istanbul|\U0001F1F9\U0001F1F7|罗马尼亚|(?<![a-zA-Z])(ro|rou|otp)(?![a-zA-Z])|romania|bucharest|\U0001F1F7\U0001F1F4)).*$"
+    include-all: true
+    url: https://www.gstatic.com/generate_204
+    interval: 1200
+    max-failed-times: 3
+    expected-status: 200/204
+    lazy: true
+    policy-priority: IPLC:0.6;(?i)新加坡.*(0\.1倍|推荐|pq|赔钱):0.4
+  - name: 香港策略
+    type: select
+    include-all: true
+    filter: "(?i)香港|HK|Hong Kong|HongKong|Hong|\U0001F1ED\U0001F1F0"
+    proxies:
+      - 香港智能
+      - DIRECT
+  - name: 台湾策略
+    type: select
+    include-all: true
+    filter: "(?i)台湾|台北|台中|台南|TW|Taiwan|Taipei|\U0001F1F9\U0001F1FC"
+    proxies:
+      - 台湾智能
+      - DIRECT
+  - name: 日本策略
+    type: select
+    include-all: true
+    filter: "(?i)日本|东京|大阪|京都|JP|Japan|Tokyo|Osaka|\U0001F1EF\U0001F1F5"
+    proxies:
+      - 日本智能
+      - DIRECT
+  - name: 狮城策略
+    type: select
+    include-all: true
+    filter: "(?i)新加坡|狮城|SG|Singapore|\U0001F1F8\U0001F1EC|马来西亚|马来|大马|MY|Malaysia|\U0001F1F2\U0001F1FE|新西兰|纽西兰|NZ|New Zealand|\U0001F1F3\U0001F1FF"
+    proxies:
+      - 狮城智能
+      - DIRECT
+  - name: 韩国策略
+    type: select
+    include-all: true
+    filter: "(?i)韩国|韓國|首尔|首爾|KR|Korea|Seoul|\U0001F1F0\U0001F1F7"
+    proxies:
+      - 韩国智能
+      - DIRECT
+  - name: 美国策略
+    type: select
+    include-all: true
+    filter: "(?i)美国|美國|US|USA|United States|America|\U0001F1FA\U0001F1F8"
+    proxies:
+      - 美国智能
+      - DIRECT
+  - name: 欧盟策略
+    type: select
+    include-all: true
+    filter: "^(?i)(?!.*(香港|深港|沪港|广港|陆港|港|(?<![a-zA-Z])(hk|hkg)(?![a-zA-Z])|hongkong|hong[\\s_-]?kong|\U0001F1ED\U0001F1F0|日本|东京|大阪|京都|神奈川|琦玉|(?<![a-zA-Z])(jp|jpn|nrt|hnd|kix|cts|fuk)(?![a-zA-Z])|japan|tokyo|osaka|\U0001F1EF\U0001F1F5|排除))(?=.*(新加坡|狮城|坡县|(?<![a-zA-Z])(sg|sin|xsp)(?![a-zA-Z])|singapore|\U0001F1F8\U0001F1EC|欧洲|欧盟|(?<![a-zA-Z])(eu|eur)(?![a-zA-Z])|europe|\U0001F1EA\U0001F1FA|德国|(?<![a-zA-Z])(de|ger|fra|ber)(?![a-zA-Z])|germany|deutschland|frankfurt|\U0001F1E9\U0001F1EA|英国|(?<![a-zA-Z])(uk|gb|gbr|lon)(?![a-zA-Z])|britain|united[\\s_-]?kingdom|england|london|\U0001F1EC\U0001F1E7|法国|(?<![a-zA-Z])(fr|fra|par|cdg)(?![a-zA-Z])|france|paris|\U0001F1EB\U0001F1F7|荷兰|(?<![a-zA-Z])(nl|nld|ams)(?![a-zA-Z])|netherlands|holland|amsterdam|\U0001F1F3\U0001F1F1|意大利|(?<![a-zA-Z])(it|ita|mil|rom)(?![a-zA-Z])|italy|italia|milan|rome|\U0001F1EE\U0001F1F9|西班牙|(?<![a-zA-Z])(es|esp|mad|bcn)(?![a-zA-Z])|spain|madrid|barcelona|\U0001F1EA\U0001F1F8|瑞士|(?<![a-zA-Z])(ch|che|zrh|gva)(?![a-zA-Z])|switzerland|swiss|zurich|geneva|\U0001F1E8\U0001F1ED|瑞典|(?<![a-zA-Z])(se|swe|arn)(?![a-zA-Z])|sweden|stockholm|\U0001F1F8\U0001F1EA|爱尔兰|(?<![a-zA-Z])(ie|irl|dub)(?![a-zA-Z])|ireland|dublin|\U0001F1EE\U0001F1EA|波兰|(?<![a-zA-Z])(pl|pol|waw)(?![a-zA-Z])|poland|warsaw|\U0001F1F5\U0001F1F1|芬兰|(?<![a-zA-Z])(fi|fin|hel)(?![a-zA-Z])|finland|helsinki|\U0001F1EB\U0001F1EE|挪威|(?<![a-zA-Z])(no|nor|osl)(?![a-zA-Z])|norway|oslo|\U0001F1F3\U0001F1F4|丹麦|(?<![a-zA-Z])(dk|dnk|cph)(?![a-zA-Z])|denmark|copenhagen|\U0001F1E9\U0001F1F0|奥地利|(?<![a-zA-Z])(at|aut|vie)(?![a-zA-Z])|austria|vienna|\U0001F1E6\U0001F1F9|比利时|(?<![a-zA-Z])(be|bel|bru)(?![a-zA-Z])|belgium|brussels|\U0001F1E7\U0001F1EA|葡萄牙|(?<![a-zA-Z])(pt|prt|lis)(?![a-zA-Z])|portugal|lisbon|\U0001F1F5\U0001F1F9|捷克|(?<![a-zA-Z])(cz|cze|prg)(?![a-zA-Z])|czech|prague|\U0001F1E8\U0001F1FF|希腊|(?<![a-zA-Z])(gr|grc|ath)(?![a-zA-Z])|greece|athens|\U0001F1EC\U0001F1F7|匈牙利|(?<![a-zA-Z])(hu|hun|bud)(?![a-zA-Z])|hungary|budapest|\U0001F1ED\U0001F1FA|土耳其|(?<![a-zA-Z])(tr|tur|ist)(?![a-zA-Z])|turkey|istanbul|\U0001F1F9\U0001F1F7|罗马尼亚|(?<![a-zA-Z])(ro|rou|otp)(?![a-zA-Z])|romania|bucharest|\U0001F1F7\U0001F1F4)).*$"
+    proxies:
+      - 欧盟智能
+      - DIRECT
+  - name: Proxy
+    type: select
+    proxies:
+      - 智能优选
+      - 欧盟策略
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 全球手动
+      - DIRECT
+  - name: 广告拦截
+    type: select
+    proxies:
+      - REJECT
+      - REJECT-DROP
+      - DIRECT
+  - name: 人工智能
+    type: select
+    proxies:
+      - 美国策略
+      - 欧盟策略
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 韩国策略
+      - 全球手动
+      - DIRECT
+  - name: EMBY
+    type: select
+    proxies:
+      - 欧盟策略
+      - 美国策略
+      - 智能优选
+      - 狮城策略
+      - 台湾策略
+      - 韩国策略
+      - 全球手动
+      - 香港策略
+      - 日本策略
+      - DIRECT
+  - name: 即时通讯
+    type: select
+    proxies:
+      - 狮城策略
+      - 智能优选
+      - 香港策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+      - DIRECT
+  - name: 社交平台
+    type: select
+    proxies:
+      - 美国策略
+      - 欧盟策略
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 韩国策略
+      - 全球手动
+      - DIRECT
+  - name: 国际媒体
+    type: select
+    proxies:
+      - 美国策略
+      - 欧盟策略
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 韩国策略
+      - 全球手动
+      - DIRECT
+  - name: 谷歌服务
+    type: select
+    proxies:
+      - 香港策略
+      - 智能优选
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+      - DIRECT
+  - name: 微软服务
+    type: select
+    proxies:
+      - DIRECT
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+  - name: 苹果服务
+    type: select
+    proxies:
+      - DIRECT
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+  - name: 游戏平台
+    type: select
+    proxies:
+      - DIRECT
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+  - name: 货币平台
+    type: select
+    proxies:
+      - 日本策略
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+      - DIRECT
+  - name: 开发服务
+    type: select
+    proxies:
+      - 美国策略
+      - 欧盟策略
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 韩国策略
+      - 全球手动
+      - DIRECT
+  - name: 网络测试
+    type: select
+    proxies:
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+      - DIRECT
+  - name: 国外流量
+    type: select
+    proxies:
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+      - DIRECT
+  - name: 国内流量
+    type: select
+    proxies:
+      - DIRECT
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+  - name: 漏网之鱼
+    type: select
+    proxies:
+      - 智能优选
+      - 香港策略
+      - 狮城策略
+      - 日本策略
+      - 台湾策略
+      - 美国策略
+      - 韩国策略
+      - 欧盟策略
+      - 全球手动
+      - DIRECT
+rule-providers:
+  oc-cn-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://ghfast.top/https://github.com/666OS/rules/raw/release/mihomo/domain/China.mrs
+    path: "./rule_provider/oc-cn-domain"
+  Tracking:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://ghfast.top/https://github.com/666OS/rules/raw/release/mihomo/domain/Tracking.mrs
+    path: "./rule_provider/Tracking"
+  Advertising:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Advertising.mrs
+    path: "./rule_provider/Advertising"
+  Private:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://ghfast.top/https://github.com/666OS/rules/raw/release/mihomo/domain/Private.mrs
+    path: "./rule_provider/Private"
+  Apple:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Apple.mrs
+    path: "./rule_provider/Apple"
+  Telegram:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Telegram.mrs
+    path: "./rule_provider/Telegram"
+  SocialMedia:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/SocialMedia.mrs
+    path: "./rule_provider/SocialMedia"
+  AI:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/AI.mrs
+    path: "./rule_provider/AI"
+  Dev:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Dev.mrs
+    path: "./rule_provider/Dev"
+  Emby:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Emby.mrs
+    path: "./rule_provider/Emby"
+  Streaming:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Streaming.mrs
+    path: "./rule_provider/Streaming"
+  Proxy:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Proxy.mrs
+    path: "./rule_provider/Proxy"
+  China:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/China.mrs
+    path: "./rule_provider/China"
+  Speedtest:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Speedtest.mrs
+    path: "./rule_provider/Speedtest"
+  Games:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Games.mrs
+    path: "./rule_provider/Games"
+  Crypto:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Crypto.mrs
+    path: "./rule_provider/Crypto"
+  Google:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Google.mrs
+    path: "./rule_provider/Google"
+  Microsoft:
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/domain/Microsoft.mrs
+    path: "./rule_provider/Microsoft"
+  PrivateIP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/ip/Private.mrs
+    path: "./rule_provider/PrivateIP"
+  TelegramIP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/ip/Telegram.mrs
+    path: "./rule_provider/TelegramIP"
+  ProxyIP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+    url: https://github.com/666OS/rules/raw/release/mihomo/ip/Proxy.mrs
+    path: "./rule_provider/ProxyIP"
+  ChinaIP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+    url: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs
+    path: "./rule_provider/ChinaIP"
+rules:
+  - DOMAIN-SUFFIX,doh.pub,DIRECT
+  - DOMAIN-SUFFIX,dot.pub,DIRECT
+  - IP-CIDR,121.4.4.77/32,DIRECT,no-resolve
+  - IP-CIDR,120.53.53.141/32,DIRECT,no-resolve
+  - IP-CIDR,1.12.34.56/32,DIRECT,no-resolve
+  - IP-CIDR6,2402:4e00:0::57da:bfa2/128,DIRECT,no-resolve
+  - IP-CIDR6,2402:4e00:1::57da:bfa2/128,DIRECT,no-resolve
+  - RULE-SET,Tracking,广告拦截
+  - RULE-SET,Advertising,广告拦截
+  - AND,((NETWORK,udp),(DST-PORT,443)),REJECT
+  - DOMAIN,ps.air-outer.com,DIRECT
+  - DOMAIN,fd.846803.xyz,DIRECT
+  # 小幻影视与 Emby 专属分流
+  - DOMAIN,aaa.yusen6.ccwu.cc,EMBY
+  - DOMAIN,emby.yusen.us.ci,EMBY
+  - DOMAIN,embya.yusen.cyou,EMBY
+  - DOMAIN,emby.yusen.cc.cd,EMBY
+  - DOMAIN,mini.jmsuper.com,EMBY
+  - DOMAIN,cf.imetyou.top,EMBY
+  - DOMAIN,emby.hohai.eu.org,EMBY
+  - DOMAIN-SUFFIX,jmsuper.com,EMBY
+  - DOMAIN-SUFFIX,imetyou.top,EMBY
+  - DOMAIN-SUFFIX,ccwu.cc,EMBY
+  - DOMAIN-SUFFIX,yusen.us.ci,EMBY
+  - DOMAIN-SUFFIX,yusen.cyou,EMBY
+  - DOMAIN-SUFFIX,yusen.cc.cd,EMBY
+  - DOMAIN-KEYWORD,yusen,EMBY
+  - DOMAIN-SUFFIX,bangumi.ca,EMBY
+  - DOMAIN-SUFFIX,embyplus.org,EMBY
+  - DOMAIN-KEYWORD,emby,EMBY
+  - DOMAIN-SUFFIX,agentrouter.org,人工智能
+  - DOMAIN-SUFFIX,justwoker.icu,人工智能
+  - DOMAIN-SUFFIX,api456.me,人工智能
+  - DOMAIN-SUFFIX,hyper.nyc.mn,人工智能
+  - DOMAIN-SUFFIX,sld.lol,人工智能
+  - DOMAIN-SUFFIX,100022.xyz,人工智能
+  - DOMAIN-SUFFIX,seekai.cc,人工智能
+  - DOMAIN-SUFFIX,motomoto.lol,人工智能
+  - DOMAIN-SUFFIX,ipix.ink,人工智能
+  - DOMAIN-SUFFIX,columbina.eu.org,人工智能
+  - DOMAIN-SUFFIX,gemai.cc,人工智能
+  - DOMAIN,gemini.846803.xyz,人工智能
+  - DOMAIN-SUFFIX,ai.lfree.org,人工智能
+  - DOMAIN-SUFFIX,tokenharbor.ai,人工智能
+  # 2026-09-20 实测补齐：以下 8 个 DSH provider 之前落到「漏网之鱼」组
+  - DOMAIN-SUFFIX,hohai.eu.org,人工智能
+  - DOMAIN-SUFFIX,atria-asi.ai,人工智能
+  - DOMAIN-SUFFIX,tingfengai.art,人工智能
+  - DOMAIN-SUFFIX,apinex.bond,人工智能
+  - DOMAIN-SUFFIX,openmili.com,人工智能
+  - DOMAIN-SUFFIX,aitodo.work,人工智能
+  - DOMAIN-SUFFIX,aitoken.ceo,人工智能
+  # dpdns.org 是公共免费 DDNS 域，用精确 DOMAIN 避免误伤他人主机
+  - DOMAIN,axai.dpdns.org,人工智能
+  # 2026-09-20 04:05 tcai(算力中心) 把域名从 api.sld.lol 换成 aiapi.c0c.cc，同步纳入 AI 组
+  - DOMAIN-SUFFIX,c0c.cc,人工智能
+  - RULE-SET,Private,DIRECT
+  - RULE-SET,PrivateIP,DIRECT,no-resolve
+  - RULE-SET,Speedtest,网络测试
+  - RULE-SET,Telegram,即时通讯
+  - RULE-SET,TelegramIP,即时通讯,no-resolve
+  - RULE-SET,SocialMedia,社交平台
+  - RULE-SET,AI,人工智能
+  - RULE-SET,Dev,开发服务
+  - RULE-SET,Emby,EMBY
+  - RULE-SET,Streaming,国际媒体
+  - RULE-SET,Games,游戏平台
+  - RULE-SET,Crypto,货币平台
+  - RULE-SET,Google,谷歌服务
+  - RULE-SET,Microsoft,微软服务
+  - RULE-SET,Apple,苹果服务
+  - RULE-SET,Proxy,国外流量
+  - RULE-SET,ProxyIP,国外流量,no-resolve
+  - RULE-SET,China,国内流量
+  - RULE-SET,ChinaIP,国内流量,no-resolve
+  - MATCH,漏网之鱼
+listeners:
+  - name: ebpf-in
+    type: ebpf
+    mode: hybrid
+    dns-mode: hijack
+    udp-timeout: 300
+    bypass-rule-set:
+      - ChinaIP
+    bypass-private-address: true
+    bypass-tun-direct: true
+    shared:
+      interface:
+        - br-lan
+      ipv6: true
+  - name: srv-hy2
+    type: hysteria2
+    port: 36712
+    listen: 0.0.0.0
+    password: 254899c298bee229b4d42a62
+    certificate: /etc/mihomo/certs/nikki-hy2.pem
+    private-key: /etc/mihomo/certs/nikki-hy2.key
+  - name: srv-vless
+    type: vless
+    port: 8081
+    listen: 0.0.0.0
+    allow-insecure: true
+    users:
+      - username: user
+        uuid: 24f58611-45d7-4d3b-8fbc-e49f384bbcb5
+  - name: srv-vless-ws
+    type: vless
+    port: 8080
+    listen: 0.0.0.0
+    ws-path: /
+    allow-insecure: true
+    users:
+      - username: user
+        uuid: 24f58611-45d7-4d3b-8fbc-e49f384bbcb5

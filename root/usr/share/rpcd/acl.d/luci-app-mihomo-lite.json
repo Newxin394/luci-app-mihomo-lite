@@ -1,0 +1,34 @@
+{
+	"luci-app-mihomo-lite": {
+		"description": "Grant access to Mihomo Lite (bare-core) service control and configuration",
+		"read": {
+			"uci": [ "mihomo" ],
+			"ubus": {
+				"service": [ "list" ],
+				"rc": [ "init", "list" ]
+			},
+			"file": {
+				"/etc/config/mihomo": [ "read" ],
+				"/etc/mihomo/config.yaml": [ "read" ],
+				"/etc/mihomo/mixin.yaml": [ "read" ],
+				"/etc/mihomo/sub.yaml": [ "read" ],
+				"/var/log/mihomo/*.log": [ "read" ],
+				"/usr/share/mihomo/ctl.sh": [ "exec" ],
+				"/etc/init.d/mihomo": [ "exec" ]
+			}
+		},
+		"write": {
+			"uci": [ "mihomo" ],
+			"file": {
+				"/etc/config/mihomo": [ "write" ],
+				"/etc/mihomo/mixin.yaml": [ "write" ],
+				"/etc/mihomo/config.yaml": [ "write" ],
+				"/etc/mihomo/sub.yaml": [ "write" ],
+				"/var/log/mihomo/core.log": [ "write" ],
+				"/var/log/mihomo/sub.log": [ "write" ],
+				"/usr/share/mihomo/ctl.sh": [ "exec" ],
+				"/etc/init.d/mihomo": [ "exec" ]
+			}
+		}
+	}
+}
