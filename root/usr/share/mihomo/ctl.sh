@@ -302,8 +302,19 @@ update_core() {
         return 1
     fi
     chmod +x "$tmp_bin"
+    sync
 
-    if ! "$tmp_bin" -v >>"$SUB_LOG" 2>&1; then
+    local test_ok=false
+    for _i in 1 2; do
+        if "$tmp_bin" -v >>"$SUB_LOG" 2>&1; then
+            test_ok=true
+            break
+        fi
+        sleep 1
+        sync
+    done
+
+    if [ "$test_ok" != "true" ]; then
         log_sub "Error: downloaded binary is not runnable"
         rm -f "$tmp_bin"
         echo '{"ok":false,"msg":"下载的二进制无法运行，已放弃替换"}'
